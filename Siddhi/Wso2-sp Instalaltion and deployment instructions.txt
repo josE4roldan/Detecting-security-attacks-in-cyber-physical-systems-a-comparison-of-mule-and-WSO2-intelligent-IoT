@@ -1,0 +1,7 @@
+wso2 provides documentation explaining how to deploy the stream processor with a siddhi file.
+1 Install WSO2 :https://docs.wso2.com/display/SP4xx/Installing+the+Product
+2 Start WSO2 sp: https://docs.wso2.com/display/SP4xx/Running+the+Product#RunningtheProduct-StartingtheStreamProcessorStudio 
+(IMPORTANT THING, you can use the editor if you are testing locally, it is recommended to use the worker to deploy the application (although in the tests we performed we did not see a difference between the two). 
+
+
+
