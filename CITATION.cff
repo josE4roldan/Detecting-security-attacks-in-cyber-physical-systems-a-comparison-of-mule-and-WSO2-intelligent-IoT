@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+authors:
+  - family-names: Roldán-Gómez
+    given-names: José
+    orcid: https://orcid.org/0000-0001-5787-1294
+    affiliation: Research Institute  of Informatics (i3a), Universidad de Castilla-La Mancha
+  - family-names: Boubeta-Puig
+    given-names: Juan
+    orcid: https://orcid.org/0000-0002-8989-7509
+    affiliation: Department of Computer Science and Engineering, University of Cadiz
+  - family-names: Ortiz
+    given-names: Guadalupe
+    orcid: https://orcid.org/0000-0002-5121-6341
+    affiliation: Department of Computer Science and Engineering, University of Cadiz
+  - family-names: Pachacama
+    given-names: Gabriela
+    affiliation:  School of Engineering, University of Cadiz
+  - family-names: Martínez
+    given-names: José Luis
+    orcid: https://orcid.org/0000-0001-5119-241
+    affiliation: Research Institute  of Informatics (i3a), Universidad de Castilla-La Mancha
+
+title: "Detecting-security-attacks-in-cyber-physical-systems-a-comparison-of-mule-and-WSO2-intelligent-IoT-"
+version: 1
+date-released: 2021-09-27
