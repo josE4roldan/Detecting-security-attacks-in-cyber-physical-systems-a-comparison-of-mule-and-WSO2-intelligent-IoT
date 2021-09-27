@@ -1,0 +1,292 @@
+@App:name("IoTSecurityAttacks")
+
+
+@source(type='mqtt', url='tcp://localhost:1883', topic = 'NetworkPacket', @map(type = 'json'))
+define stream NetworkPacket(id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int);
+@source(type='mqtt', url='tcp://localhost:1883', topic = 'NetworkPrediction', @map(type = 'json'))
+define stream NetworkPrediction(id long,  packetLengthPredict float, packetLengthPredictSquaredError float); 
+
+@sink(type='log')
+define stream np(id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int);
+
+@sink(type='log')
+define stream pp(id long,  packetLengthPredict float, packetLengthPredictSquaredError float);
+
+
+/*@sink(type='file', file.uri='C:\output\Anomaly.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream FeaturelAnomaly(id long, timestamp long,  destIp string);
+
+
+
+/*@sink(type='file', file.uri='C:\output\Anomaly.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream ProtocolAnomaly(id long, timestamp long,  destIp string);
+
+/*@sink(type='file', file.uri='C:\output\Anomaly.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream FeaturelAnomaly(id long, timestamp long,  destIp string);
+
+
+
+
+/*@sink(type='file', file.uri='C:\output\MQTT_BigMsg_DoS.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream MQTT_BigMsg_DoS(id long, timestamp long,  destIp string);
+
+
+
+/*@sink(type='file', file.uri='C:\output\Src_MQTT_1m_Batch.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream Src_MQTT_1m_Batch(id long, timestamp long, sourceIp string,  count long);
+
+/*@sink(type='file', file.uri='C:\output\MQTT_Disconnect_Wave.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream MQTT_Disconnect_Wave(id long, timestamp long, sourceIp string);
+
+
+/*@sink(type='file', file.uri='C:\output\Src_MQTT_5m_Batch.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream Src_MQTT_5m_Batch(id long, timestamp long, sourceIp string,  count long);
+
+/*@sink(type='file', file.uri='C:\output\MQTT_Subscription_Fuzzing.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream MQTT_Subscription_Fuzzing(id long, timestamp long, sourceIp string);
+
+
+
+/*@sink(type='file', file.uri='C:\output\SrcDst_TCP_1s_Batch.txt', @map(type = 'json'))*/
+/*@sink(type='log')*/
+define stream SrcDst_TCP_1s_Batch(id long, timestamp long, sourceIp string, destIp string, count long, destPortDistinctCount long);
+
+/*@sink(type='file', file.uri='C:\output\TCP_SYN.txt', @map(type = 'json'))*/
+@sink(type='log') 
+define stream TCP_SYN(id long, timestamp long, sourceIp string, destIp string);
+/*******************/
+
+/*@sink(type='file', file.uri='C:\output\Src_TELNET_1m_Batch.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream Src_TELNET_1m_Batch(id long, timestamp long, sourceIp string,  count long);
+
+/*@sink(type='file', file.uri='C:\output\TELNET_Mirai.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream TELNET_Mirai(id long, timestamp long, sourceIp string);
+
+/*********************/
+
+
+/*@sink(type='file', file.uri='C:\output\SrcDst_UDP_5s_Batch.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream SrcDst_UDP_5s_Batch(id long, timestamp long, sourceIp string,destIp string,  count long,destPortDistinctCount long);
+
+/*@sink(type='file', file.uri='C:\output\UDP_Port_Scan.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream UDP_Port_Scan(id long, timestamp long, sourceIp string, destIp string);
+
+
+/*@sink(type='file', file.uri='C:\output\SrcDst_Xmas_1s_Batch', @map(type = 'json'))*/
+@sink(type='log')
+define stream SrcDst_Xmas_1s_Batch(id long, timestamp long, sourceIp string,destIp string,  count long,destPortDistinctCount long);
+
+/*@sink(type='file', file.uri='C:\output\Xmas_Scan.txt', @map(type = 'json'))*/
+@sink(type='log')
+define stream Xmas_Scan(id long, timestamp long, sourceIp string, destIp string);
+
+
+
+
+
+define window Src_MQTT_1m_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(1 minutes);
+
+define window Src_MQTT_5m_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(5 minutes);
+
+
+
+
+define window SrcDst_TCP_1s_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(1 seconds);
+
+define window Src_TELNET_1m_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(1 minutes);
+
+define window SrcDst_UDP_5s_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(5 seconds);
+
+define window SrcDst_Xmas_1s_BatchWindow (id long,  packetLength float, info string, sourceMac string, destMac string, sourceIp string, destIp string, protocol string, tcpSourcePort string, tcpDestPort string, tcpFlags string, tcpWindowSize int, udpSourcePort string, udpDestPort string, mqttFlags string, mqttMessage string, mqttTopic string, mqttMessageLength int, mqttFrameCount int) timeBatch(1 seconds);
+
+from NetworkPacket
+select * 
+insert into np;
+
+from NetworkPrediction
+select *
+insert into pp;
+
+/*
+@info(name="Anomaly")
+from ((every a1 = NetworkPacket[(a1.protocol != 'TCP' and a1.protocol != 'UDP' and a1.protocol != 'MQTT' and a1.protocol != 'ARP' and a1.protocol != 'DHCP' and a1.protocol != 'MDNS' and a1.protocol != ' NTP' and a1.protocol != 'ICMP' and a1.protocol != 'ICMPv6' and a1.protocol != 'DNS' and a1.protocol != 'IGMPv3')]) 
+or ((every a2 = NetworkPacket[(a2.protocol == 'MQTT' or a2.protocol == 'TCP')]) -> a3 = NetworkPrediction[(a3.id == a2.id and (a3.packetLengthPredict < (a2.packetLength - a3.packetLengthPredictSquaredError) or a3.packetLengthPredict > (a2.packetLength + a3.packetLengthPredictSquaredError)))]))
+select a3.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a2.destIp as destIp
+insert into Anomaly;
+*/
+
+@info(name="ProtocolAnomaly")
+from (every a1 = NetworkPacket[(a1.protocol != 'TCP' and a1.protocol != 'UDP' and a1.protocol != 'MQTT' and a1.protocol != 'ARP' and a1.protocol != 'DHCP' and a1.protocol != 'MDNS' and a1.protocol != ' NTP' and a1.protocol != 'ICMP' and a1.protocol != 'ICMPv6' and a1.protocol != 'DNS' and a1.protocol != 'IGMPv3')])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.destIp as destIp
+insert into ProtocolAnomaly;
+
+@info(name="FeatureAnomaly")
+from ((every a1 = NetworkPacket[(a1.protocol == 'MQTT' or a1.protocol == 'TCP')]) -> a2 = NetworkPrediction[(a2.id == a1.id and (a2.packetLengthPredict < (a1.packetLength - a2.packetLengthPredictSquaredError) or a2.packetLengthPredict > (a1.packetLength + a2.packetLengthPredictSquaredError)))])
+select a2.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.destIp as destIp
+insert into FeatureAnomaly;
+
+
+@info(name="MQTT_BigMsg_DoS")
+from ((every a1 = NetworkPacket[(a1.protocol == 'MQTT' and a1.mqttFlags == '0x30')]) -> a2 = NetworkPrediction[(a2.id == a1.id and (a2.packetLengthPredict < (a1.packetLength - a2.packetLengthPredictSquaredError) or a2.packetLengthPredict > (a1.packetLength + a2.packetLengthPredictSquaredError)))])
+select a2.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.destIp as destIp
+insert into MQTT_BigMsg_DoS;
+
+from NetworkPacket
+select * 
+insert into Src_MQTT_1m_BatchWindow;
+
+
+
+
+@info(name="Src_MQTT_1m_Batch")
+from (every a1 = Src_MQTT_1m_BatchWindow[(a1.protocol == 'MQTT' and a1.info == 'Connect Command')])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+group by a1.sourceIp
+insert into Src_MQTT_1m_Batch;
+
+@info(name="MQTT_Disconnect_Wave")
+from (every a1 = Src_MQTT_1m_Batch[a1.count >= 5])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp
+insert into MQTT_Disconnect_Wave;
+
+
+from NetworkPacket
+select * 
+insert into Src_MQTT_5m_BatchWindow;
+
+
+@info(name="Src_MQTT_5m_Batch")
+from (every a1 = Src_MQTT_5m_BatchWindow[(a1.protocol == 'MQTT' and a1.info == 'Subscribe Request')])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+group by a1.sourceIp
+insert into Src_MQTT_5m_Batch;
+
+@info(name="MQTT_Subscription_Fuzzing")
+from (every a1 = Src_MQTT_5m_Batch[a1.count >= 20])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp
+insert into MQTT_Subscription_Fuzzing;
+
+
+from NetworkPacket
+select * 
+insert into SrcDst_TCP_1s_BatchWindow;
+
+@info(name="SrcDst_TCP_1s_Batch")
+from (every a1 = SrcDst_TCP_1s_BatchWindow[(a1.protocol == 'TCP' and a1.tcpFlags == '0x002')])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   distinctCount(a1.tcpDestPort) as destPortDistinctCount
+group by a1.sourceIp, a1.destIp
+insert into SrcDst_TCP_1s_Batch;
+
+
+@info(name="TCP_SYN")
+from (every a1 = SrcDst_TCP_1s_Batch[(a1.count >= 10 and a1.destPortDistinctCount >= 3)])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+insert into TCP_SYN;
+
+from NetworkPacket
+select * 
+insert into Src_TELNET_1m_BatchWindow;
+
+@info(name="Src_TELNET_1m_Batch")
+from (every a1 = SrcDst_TCP_1s_BatchWindow[a1.protocol == 'TELNET'])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+group by a1.sourceIp
+insert into Src_TELNET_1m_Batch;
+
+@info(name="TELNET_Mirai")
+from (every a1 = Src_TELNET_1m_Batch[a1.count >= 5])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp
+insert into TELNET_Mirai;
+
+/*SrcDst_UDP_5s_BatchWindow*/
+
+from NetworkPacket
+select * 
+insert into SrcDst_TCP_1s_BatchWindow;
+
+@info(name="SrcDst_UDP_5s_Batch")
+from (every a1 = SrcDst_UDP_5s_BatchWindow[a1.protocol == 'UDP'])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   distinctCount(a1.udpDestPort) as destPortDistinctCount
+group by a1.sourceIp, a1.destIp
+insert into SrcDst_UDP_5s_Batch;
+
+@info(name="UDP_Port_Scan")
+from (every a1 = SrcDst_UDP_5s_Batch[(a1.count >= 10 and a1.destPortDistinctCount >= 3)])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+insert into UDP_Port_Scan;
+
+from NetworkPacket
+select * 
+insert into SrcDst_Xmas_1s_BatchWindow;
+
+@info(name="SrcDst_Xmas_1s_Batch")
+from (every a1 = SrcDst_Xmas_1s_BatchWindow[(a1.protocol == 'TCP' and a1.tcpFlags == '0x029')])
+select max(a1.id) as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   distinctCount(a1.tcpDestPort) as destPortDistinctCount
+group by a1.sourceIp, a1.destIp
+insert into SrcDst_Xmas_1s_Batch;
+
+
+@info(name="Xmas_Scan")
+from (every a1 = SrcDst_Xmas_1s_Batch[(a1.count >= 10 and a1.destPortDistinctCount >= 2)])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+insert into Xmas_Scan;
+

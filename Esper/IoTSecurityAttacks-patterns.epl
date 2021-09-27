@@ -1,0 +1,162 @@
+@Name("NetworkPacketEvent")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into NetworkPacketEvent
+select id,
+	sourceIp,
+	destIp,
+	protocol,
+	current_timestamp() as timestamp 
+from NetworkPacket;
+
+@Name("NetworkPredictionEvent")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into NetworkPredictionEvent
+select id,
+	current_timestamp() as timestamp 
+from NetworkPrediction;
+
+
+@Name("SrcDst_TCP_1s_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into SrcDst_TCP_1s_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   count(distinct a1.tcpDestPort) as destPortDistinctCount
+from pattern [(every a1 = NetworkPacket((a1.protocol = 'TCP' and a1.tcpFlags = '0x002')))].win:time_batch(1 seconds)
+group by a1.sourceIp, a1.destIp;
+
+@Name("TCP_SYN")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into TCP_SYN
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+from pattern [(every a1 = SrcDst_TCP_1s_Batch((a1.count >= 10 and a1.destPortDistinctCount >= 3)))];
+
+@Name("SrcDst_UDP_5s_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into SrcDst_UDP_5s_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   count(distinct a1.udpDestPort) as destPortDistinctCount
+from pattern [(every a1 = NetworkPacket(a1.protocol = 'UDP'))].win:time_batch(5 seconds)
+group by a1.sourceIp, a1.destIp;
+
+@Name("UDP_Port_Scan")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into UDP_Port_Scan
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+from pattern [(every a1 = SrcDst_UDP_5s_Batch((a1.count >= 10 and a1.destPortDistinctCount >= 3)))];
+
+@Name("SrcDst_Xmas_1s_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into SrcDst_Xmas_1s_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp, 
+   count(a1.sourceIp) as count, 
+   count(distinct a1.tcpDestPort) as destPortDistinctCount
+from pattern [(every a1 = NetworkPacket((a1.protocol = 'TCP' and a1.tcpFlags = '0x029')))].win:time_batch(1 seconds)
+group by a1.sourceIp, a1.destIp;
+
+@Name("Xmas_Scan")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into Xmas_Scan
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   a1.destIp as destIp
+from pattern [(every a1 = SrcDst_Xmas_1s_Batch((a1.count >= 10 and a1.destPortDistinctCount >= 2)))];
+
+@Name("Src_TELNET_1m_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into Src_TELNET_1m_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+from pattern [(every a1 = NetworkPacket(a1.protocol = 'TELNET'))].win:time_batch(1 minutes)
+group by a1.sourceIp;
+
+@Name("TELNET_Mirai")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into TELNET_Mirai
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp
+from pattern [(every a1 = Src_TELNET_1m_Batch(a1.count >= 5))];
+
+@Name("Src_MQTT_1m_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into Src_MQTT_1m_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+from pattern [(every a1 = NetworkPacket((a1.protocol = 'MQTT' and a1.info = 'Connect Command')))].win:time_batch(1 minutes)
+group by a1.sourceIp;
+
+@Name("MQTT_Disconnect_Wave")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into MQTT_Disconnect_Wave
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp
+from pattern [(every a1 = Src_MQTT_1m_Batch(a1.count >= 5))];
+
+@Name("Src_MQTT_5m_Batch")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into Src_MQTT_5m_Batch
+select max(a1.id) as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp, 
+   count(a1.sourceIp) as count
+from pattern [(every a1 = NetworkPacket((a1.protocol = 'MQTT' and a1.info = 'Subscribe Request')))].win:time_batch(5 minutes)
+group by a1.sourceIp;
+
+@Name("MQTT_Subscription_Fuzzing")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into MQTT_Subscription_Fuzzing
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.sourceIp as sourceIp
+from pattern [(every a1 = Src_MQTT_5m_Batch(a1.count >= 20))];
+
+@Name("MQTT_BigMsg_DoS")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into MQTT_BigMsg_DoS
+select a2.id as id, 
+   current_timestamp() as timestamp, 
+   a1.destIp as destIp 
+from pattern [((every a1 = NetworkPacket((a1.protocol = 'MQTT' and
+   a1.mqttFlags = '0x30'))) -> a2 = NetworkPrediction((a2.id = a1.id 
+   and (a2.packetLengthPredict < (a1.packetLength -
+   a2.packetLengthPredictSquaredError) or a2.packetLengthPredict >
+   (a1.packetLength + a2.packetLengthPredictSquaredError)))))];
+   
+@Name("ProtocolAnomaly")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into ProtocolAnomaly 
+select a1.id as id, 
+   current_timestamp() as timestamp, 
+   a1.destIp as destIp
+from pattern [(every a1 = NetworkPacket((a1.protocol != 'TCP' and a1.protocol != 'UDP' and a1.protocol != 'MQTT' and a1.protocol != 'ARP' and a1.protocol != 'DHCP' and a1.protocol != 'MDNS' and a1.protocol != 'NTP' and a1.protocol != 'ICMP' and a1.protocol != 'ICMPv6' and a1.protocol != 'DNS' and a1.protocol != 'IGMPv3')))];
+
+@Name("FeatureAnomaly")
+@Tag(name="domainName", value="IoTSecurityAttacks")
+insert into FeatureAnomaly 
+select a2.id as id, 
+   current_timestamp() as timestamp, 
+   a1.destIp as destIp 
+from pattern [((every a1 = NetworkPacket((a1.protocol = 'MQTT' or a1.protocol = 'TCP'))) -> a2 = NetworkPrediction((a2.id = a1.id and (a2.packetLengthPredict < (a1.packetLength - a2.packetLengthPredictSquaredError) or a2.packetLengthPredict > (a1.packetLength + a2.packetLengthPredictSquaredError)))))];

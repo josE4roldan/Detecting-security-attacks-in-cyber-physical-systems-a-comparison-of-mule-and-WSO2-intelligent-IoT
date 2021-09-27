@@ -1,0 +1,7 @@
+
+@info(name="ProtocolAnomaly")
+from (every a1 = NetworkPacket[(a1.protocol != 'TCP' and a1.protocol != 'UDP' and a1.protocol != 'MQTT' and a1.protocol != 'ARP' and a1.protocol != 'DHCP' and a1.protocol != 'MDNS' and a1.protocol != ' NTP' and a1.protocol != 'ICMP' and a1.protocol != 'ICMPv6' and a1.protocol != 'DNS' and a1.protocol != 'IGMPv3')])
+select a1.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.destIp as destIp
+insert into ProtocolAnomaly;

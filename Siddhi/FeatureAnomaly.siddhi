@@ -1,0 +1,7 @@
+
+@info(name="FeatureAnomaly")
+from ((every a1 = NetworkPacket[(a1.protocol == 'MQTT' or a1.protocol == 'TCP')]) -> a2 = NetworkPrediction[(a2.id == a1.id and (a2.packetLengthPredict < (a1.packetLength - a2.packetLengthPredictSquaredError) or a2.packetLengthPredict > (a1.packetLength + a2.packetLengthPredictSquaredError)))])
+select a2.id as id, 
+   time:timestampInMilliseconds() as timestamp, 
+   a1.destIp as destIp
+insert into FeatureAnomaly;
